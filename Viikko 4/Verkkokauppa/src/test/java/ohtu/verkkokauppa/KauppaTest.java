@@ -91,4 +91,58 @@ public class KauppaTest {
 
 
     }
+
+    @Test
+    public void yhtaTuotettaKahtaKappalettaOstaessaKutsutaanPankinTilisiirtoaOikeillaArvoilla() {
+
+        Pankki pankki = mock(Pankki.class);
+        Viitegeneraattori viite = mock(Viitegeneraattori.class);
+        Varasto varasto = mock(Varasto.class);
+
+        when(viite.uusi()).thenReturn(313);
+
+        when(varasto.saldo(1)).thenReturn(7);
+
+        when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "kriisiviesintakonsultaatio", 1000));
+
+        Kauppa puoti = new Kauppa(varasto, pankki, viite);
+
+        puoti.aloitaAsiointi();
+        puoti.lisaaKoriin(1);
+        puoti.lisaaKoriin(1);
+        puoti.tilimaksu("korporaatio", "FI13 2233 1141 04");
+
+        verify(pankki).tilisiirto("korporaatio", 313, "FI13 2233 1141 04", "33333-44455", 2000);
+
+
+
+    }
+
+    @Test
+    public void loppunuttaTuotettaOstaessaKutsutaanPankinTilisiirtoaOikeillaArvoilla() {
+
+        Pankki pankki = mock(Pankki.class);
+        Viitegeneraattori viite = mock(Viitegeneraattori.class);
+        Varasto varasto = mock(Varasto.class);
+
+        when(viite.uusi()).thenReturn(313);
+
+        when(varasto.saldo(1)).thenReturn(7);
+        when(varasto.saldo(2)).thenReturn(0);
+
+        when(varasto.haeTuote(1)).thenReturn(new Tuote(1, "kriisiviesintakonsultaatio", 1000));
+        when(varasto.haeTuote(2)).thenReturn(new Tuote(2, "logoJaBrandiUudistus", 2500));
+
+        Kauppa puoti = new Kauppa(varasto, pankki, viite);
+
+        puoti.aloitaAsiointi();
+        puoti.lisaaKoriin(1);
+        puoti.lisaaKoriin(2);
+        puoti.tilimaksu("korporaatio", "FI13 2233 1141 04");
+
+        verify(pankki).tilisiirto("korporaatio", 313, "FI13 2233 1141 04", "33333-44455", 1000);
+
+
+
+    }
 }
